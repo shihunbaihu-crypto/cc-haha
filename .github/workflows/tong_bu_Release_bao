@@ -1,0 +1,13 @@
+name: 一键搬运Release
+on:
+  workflow_dispatch: # 这个代表手动点火启动
+jobs:
+  copy_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 搬运工开始工作
+        uses: wangchucheng/gh-release-copy@v1
+        with:
+          src_repo: "NanmiCoder/cc-haha"
+          target_repo: ${{ github.repository }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
