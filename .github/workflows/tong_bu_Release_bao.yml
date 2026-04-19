@@ -1,16 +1,34 @@
 name: 一键搬运Release
+
 on:
   workflow_dispatch:
 
 jobs:
   copy_job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - name: 搬运工开始工作
-        uses: wangchucheng/gh-release-copy@v1
-        with:
-          src_repo: "NanmiCoder/cc-haha"
-          # 指定只搬运这个版本
-          tag: "v0.1.1"
-          target_repo: ${{ github.repository }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: 搬运工开始工作（v0.1.1）
+        run: |
+          echo "开始搬运 NanmiCoder/cc-haha v0.1.1 Release..."
+
+          # 下载源仓库 v0.1.1 的所有 assets（目前为空也没关系）
+          gh release download v0.1.1 \
+            --repo NanmiCoder/cc-haha \
+            --dir ./assets || echo "本次 Release 没有 assets，跳过下载"
+
+          # 获取源 Release 的标题和说明
+          TITLE=$(gh release view v0.1.1 --repo NanmiCoder/cc-haha --json name --jq '.name' || echo "Claude Code Haha v0.1.1")
+          BODY=$(gh release view v0.1.1 --repo NanmiCoder/cc-haha --json body --jq '.body' || echo "从 NanmiCoder/cc-haha 搬运而来")
+
+          # 在当前仓库创建相同的 Release
+          gh release create v0.1.1 \
+            --title "$TITLE" \
+            --notes "$BODY" \
+            ./assets/* || echo "Release v0.1.1 已存在或创建失败"
+
+          echo "搬运完成！"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
